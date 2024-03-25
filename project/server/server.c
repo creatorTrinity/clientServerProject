@@ -29,7 +29,7 @@ int main()
                 ClientInfo = (mq.msgPk.DataPack.Data.ClientInfo);
                 printf(" client ID = %d\n",ClientInfo.ClientPID);
 
-                assignWorkToThreads(&ClientInfo);
+                assignWorkToThreads(msgId,&ClientInfo);
             }
             else
             {
