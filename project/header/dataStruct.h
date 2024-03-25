@@ -8,22 +8,9 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
-#define KEY 123
-#define NAME_LEN 100
-#define MOB_NO_LEN 11
-#define MAX_BATCH_SIZE 100
-#define MAX_ARR_SIZE 100
-#define USER_NAME_LEN 10
-#define USER_PASS_LEN 10
-
-#define SERVER_CONNECTED "OK"
-#define SERVER_NOT_CONNECTED "NOK"
-#define SERVER_UNKNOWN_ERROR "FAILED"
-
-enum enumMsgType{CLIENT_START=1};
-enum enumStructID{EMP_INFO,CLIENT_INFO,QUERY_RESULT,QUERY_STRING,SERVER_ACK};
-enum enumServerAck{OK,ERROR};
+#include "globalVar.h"
 
 typedef struct employee
 {
@@ -61,14 +48,35 @@ typedef struct serverAck
     char msg[MAX_ARR_SIZE];
 }serverAck;
 
-typedef struct msgPacket
+typedef struct watchDog
 {
-    employee Employee;                            //EMP
-    clientInfo ClientInfo;                   //CLIENT_INFO
+    pthread_t tid;
+    int msgId;
+    int key;
+    time_t lstCmdSent; //last command response sent to the client
+    struct watchDog *next;
+}watchDog;
+
+
+typedef union data
+{
+    employee Employee;                      //EMP
+    clientInfo ClientInfo;                  //CLIENT_INFO
     queryResult QueryResult;                //QUERY
     queryString QueryString;                //QUERY_STRING
     serverAck ServerAck;                    //SERVER_ACK
+    watchDog WatchDog;
+}data;
+
+typedef struct dataPack
+{
+    data Data;
     int structId;                           //EMP or CLIENT_INFO or QUERY or SERVER_ACK
+}dataPack;
+
+typedef struct msgPacket
+{
+    dataPack DataPack;
     int batchSize;
     char endOfPacket;
 
@@ -89,8 +97,11 @@ typedef struct threadArg
 
 typedef struct node
 {
-    employee *emp;
+    dataPack *DataPack;
     struct node *next;
 }node;
+
+dataPack *_WATCH_DOC_ELE_HEAD_;
+
 
 #endif //_DATA_STRUCT_

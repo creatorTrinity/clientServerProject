@@ -1,5 +1,24 @@
 #ifndef _GLOBAL_VAR_
 #define _GLOBAL_VAR_
 
-#include <vecto
+
+#define KEY 123
+#define NAME_LEN 100
+#define MOB_NO_LEN 11
+#define MAX_BATCH_SIZE 100
+#define MAX_ARR_SIZE 100
+#define USER_NAME_LEN 10
+#define USER_PASS_LEN 10
+#define MAX_CLIENT_CONNECTION 10
+#define CONNECTION_TIME_OUT_SECONDS 5
+
+#define SERVER_CONNECTED "OK"
+#define SERVER_NOT_CONNECTED "NOK"
+#define SERVER_UNKNOWN_ERROR "FAILED"
+
+enum enumMsgType{CLIENT_START=1};
+enum enumStructID{EMP_INFO,CLIENT_INFO,QUERY_RESULT,QUERY_STRING,SERVER_ACK,WATCH_DOG};
+enum enumServerAck{OK,ERROR};
+
+
 #endif //_GLOBAL_VAR_

@@ -7,10 +7,39 @@ void prepareClientResponse(char *msg,char *query)
 {
     strcpy(msg,query);
 }
-
-void *threadWatchDog(void *arg)
+void updateWatchDog()
 {
 
+}
+void *threadWatchDog(void *arg)
+{
+    /*time_t currentTime;
+    time(&currentTime);
+    int ret;
+    watchDog *WatchDog;
+    while(1)
+    {
+        for( int i=0; i < MAX_CLIENT_CONNECTION; i++)
+        {
+            WatchDog = _WATCH_DOC_THREAD_ELEMENT_[i];
+            if( currentTime - WatchDog.lstCmdSent > CONNECTION_TIME_OUT_SECONDS )
+            {
+                printf("main(): sending cancellation request\n");
+                ret = pthread_cancel(WatchDog.tid);
+                if (ret != 0)
+                {
+                    handle_error_en(s, "pthread_cancel");
+                }
+                else
+                {
+                    free(WatchDog);
+                    WatchDog = NULL;
+                }
+            }
+        }
+        printf("\nwatch DOG is going for sleep\n");
+        sleep(CONNECTION_TIME_OUT_SECONDS);
+    }*/
     return NULL;
 }
 void *myThreadFunc(void *arg)
@@ -20,6 +49,7 @@ void *myThreadFunc(void *arg)
     int msgId;
     int key;
     char result[MAX_ARR_SIZE];
+    watchDog *WatchDog;
 
     msgQueue mq;
     msgPacket MsgPack;
@@ -36,11 +66,12 @@ void *myThreadFunc(void *arg)
     printf(" Started serving the client id = %d\n",ThreadArgs->ClientInfo->ClientPID);
 
     strcpy(ServerAck.msg, SERVER_CONNECTED);
-    MsgPack.ServerAck = ServerAck;
-    MsgPack.structId = SERVER_ACK;
+    MsgPack.DataPack.Data.ServerAck = ServerAck;
+    MsgPack.DataPack.structId = SERVER_ACK;
     MsgPack.endOfPacket = 0;
     mq.msgType = CLIENT_START;
     mq.msgPk = MsgPack;
+    msgId = msgget(KEY,0666 | IPC_CREAT);
     printf(" sending ACK message from thread id = %lu\n", threadId);
     msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
     if(msgRet==-1)
@@ -54,36 +85,38 @@ void *myThreadFunc(void *arg)
     printf("server Thread creating new message queue with Id =%d\n",key);
     msgId = msgget(key,0666 | IPC_CREAT);
 
+    WatchDog = (watchDog*) malloc(sizeof(watchDog));
+
     while(1)
     {
-        MsgPack.QueryString = QueryString;
-        MsgPack.structId = QUERY_STRING;
+        MsgPack.DataPack.Data.QueryString = QueryString;
+        MsgPack.DataPack.structId = QUERY_STRING;
         MsgPack.endOfPacket = 0;
         mq.msgType = key;
         mq.msgPk = MsgPack;
 
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
-            printf("mq.msgPk.structId = %d\n",mq.msgPk.structId);
-            if(mq.msgPk.structId == EMP_INFO )
+            printf("mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
+            if(mq.msgPk.DataPack.structId == EMP_INFO )
             {
-                Employee = (mq.msgPk.Employee);
+                Employee = (mq.msgPk.DataPack.Data.Employee);
                 printf(" EMP ID = %d\n",Employee.empId);
             }
-            else if(mq.msgPk.structId == CLIENT_INFO )
+            else if(mq.msgPk.DataPack.structId == CLIENT_INFO )
             {
-                ClientInfo = (mq.msgPk.ClientInfo);
+                ClientInfo = (mq.msgPk.DataPack.Data.ClientInfo);
                 printf(" client PID = %d\n",ClientInfo.ClientPID);
             }
-            else if(mq.msgPk.structId == QUERY_RESULT )
+            else if(mq.msgPk.DataPack.structId == QUERY_RESULT )
             {
-                QueryResult = (mq.msgPk.QueryResult);
+                QueryResult = (mq.msgPk.DataPack.Data.QueryResult);
                 printf(" client QueryResult = %s\n",QueryResult.result);
             }
-            else if(mq.msgPk.structId == QUERY_STRING )
+            else if(mq.msgPk.DataPack.structId == QUERY_STRING )
             {
-                QueryString = (mq.msgPk.QueryString);
-                if(strcmp(mq.msgPk.QueryString.query,"exit") == 0 )
+                QueryString = (mq.msgPk.DataPack.Data.QueryString);
+                if(strcmp(mq.msgPk.DataPack.Data.QueryString.query,"exit") == 0 )
                 {
                     printf("thread received client EXIT request\n");
                     break;
@@ -105,8 +138,8 @@ void *myThreadFunc(void *arg)
             strcpy(QueryResult.result,result);
 
 
-            MsgPack.QueryResult = QueryResult;
-            MsgPack.structId = QUERY_RESULT;
+            MsgPack.DataPack.Data.QueryResult = QueryResult;
+            MsgPack.DataPack.structId = QUERY_RESULT;
             MsgPack.endOfPacket = 0;
             mq.msgType = key;
             mq.msgPk = MsgPack;
@@ -143,6 +176,7 @@ pthread_t assignWorkToThreads(clientInfo *ClientInfo)
     if( ret == -1 )
     {
         printf("Fail to create thread, Exiting...\n");
+        return ret;
     }
     return tid;
 }
