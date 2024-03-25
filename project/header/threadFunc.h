@@ -7,9 +7,20 @@ void prepareClientResponse(char *msg,char *query)
 {
     strcpy(msg,query);
 }
-void updateWatchDog()
-{
 
+void updateTimeToThread(threadArg **ThreadArgs)
+{
+    /*this part will be updated everytime if the server thread communicate with client*/
+    time(&currentTime);
+    (*ThreadArgs)->WatchDog.lstCmdSent = currentTime;
+    updateWatchDog((*ThreadArgs));
+    /*this part will be updated everytime the thread communicate woth client*/
+}
+void updateWatchDog(threadArg *ThreadArgs)
+{
+    dataPack *DataPack = (dataPack *)malloc(sizeof (dataPack));
+    DataPack->Data.WatchDog = ThreadArgs->WatchDog;
+    addNode(&_WATCH_DOC_ELE_HEAD_,DataPack);
 }
 void *threadWatchDog(void *arg)
 {
@@ -45,6 +56,7 @@ void *threadWatchDog(void *arg)
 void *myThreadFunc(void *arg)
 {
     threadArg *ThreadArgs = (threadArg *)arg;
+    time_t currentTime;
     int msgRet;
     int msgId;
     int key;
@@ -74,6 +86,7 @@ void *myThreadFunc(void *arg)
     msgId = msgget(KEY,0666 | IPC_CREAT);
     printf(" sending ACK message from thread id = %lu\n", threadId);
     msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+
     if(msgRet==-1)
     {
         perror("myThreadFunc:::msg Send error: ");
@@ -85,7 +98,16 @@ void *myThreadFunc(void *arg)
     printf("server Thread creating new message queue with Id =%d\n",key);
     msgId = msgget(key,0666 | IPC_CREAT);
 
-    WatchDog = (watchDog*) malloc(sizeof(watchDog));
+    /*updating the watch Dog attributes in the linked list _WATCH_DOC_ELE_HEAD_*/
+    ThreadArgs->WatchDog.tid = threadId;
+    ThreadArgs->WatchDog.clientMsgId = msgId;
+    ThreadArgs->WatchDog.serverMsgId = ThreadArgs.serverMsgId;
+    ThreadArgs->WatchDog.clientKey = key;
+    ThreadArgs->WatchDog.serverKey = KEY;
+
+    /*this part will be updated everytime if the server thread communicate with client*/
+    updateTimeToThread(&hreadArgs);
+    /*this part will be updated everytime if the server thread communicate with client*/
 
     while(1)
     {
@@ -98,6 +120,7 @@ void *myThreadFunc(void *arg)
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
             printf("mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
+
             if(mq.msgPk.DataPack.structId == EMP_INFO )
             {
                 Employee = (mq.msgPk.DataPack.Data.Employee);
@@ -152,6 +175,9 @@ void *myThreadFunc(void *arg)
                 printf("Server msg not send\n");
                 break;
             }
+            /*this part will be updated everytime if the server thread communicate with client*/
+            updateTimeToThread(&hreadArgs);
+            /*this part will be updated everytime if the server thread communicate with client*/
         }
         else
         {
@@ -163,7 +189,7 @@ void *myThreadFunc(void *arg)
     pthread_exit(NULL);
 }
 
-pthread_t assignWorkToThreads(clientInfo *ClientInfo)
+pthread_t assignWorkToThreads(int serverMsgId, clientInfo *ClientInfo)
 {
     pthread_t tid;
     int ret;

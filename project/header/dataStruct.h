@@ -12,6 +12,7 @@
 
 #include "globalVar.h"
 
+
 typedef struct employee
 {
     char firstName[NAME_LEN];
@@ -51,8 +52,10 @@ typedef struct serverAck
 typedef struct watchDog
 {
     pthread_t tid;
-    int msgId;
-    int key;
+    int clientMsgId;
+    int serverMsgId;
+    int clientKey;
+    int serverKey;
     time_t lstCmdSent; //last command response sent to the client
     struct watchDog *next;
 }watchDog;
@@ -92,6 +95,8 @@ typedef struct msgQueue
 typedef struct threadArg
 {
     clientInfo *ClientInfo;
+    int serverMsgId;
+    watchDog WatchDog;
     msgQueue *MsgQueue;
 }threadArg;
 
@@ -101,7 +106,7 @@ typedef struct node
     struct node *next;
 }node;
 
-dataPack *_WATCH_DOC_ELE_HEAD_;
+dataPack *_WATCH_DOC_ELE_HEAD_= NULL;
 
 
 #endif //_DATA_STRUCT_

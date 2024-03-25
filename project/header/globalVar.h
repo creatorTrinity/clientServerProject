@@ -1,6 +1,7 @@
 #ifndef _GLOBAL_VAR_
 #define _GLOBAL_VAR_
 
+#include "linkedList.h"
 
 #define KEY 123
 #define NAME_LEN 100

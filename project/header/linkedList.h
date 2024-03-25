@@ -2,50 +2,59 @@
 #define _LINKED_LIST_
 #include "dataStruct.h"
 
-node* addNode(node *head,dataPack *DataPack)
+node* addNode(node **head,dataPack *DataPack)
 {
-    watchDogNode *p,*q,*r;
-    p = (watchDogNode *)malloc(sizeof(watchDogNode));
+    node *p,*q,*r;
+    p = (node *)malloc(sizeof(node));
     p->dataPack = DataPack;
     p->next = NULL;
 
-    if ( head == NULL)
+    if ( *head == NULL)
     {
-        head = p;
+        *head = p;
     }
     else
     {
-        q = head;
+        q = *head;
         while(q->next != NULL)
         {
             q = q->next;
         }
-        p->next = p;
+        q->next = p;
     }
-    return head;
+    return *head;
 }
 
-node* removeNode(node *head,dataPack *DataPack)
+node* removeWatchDogNode(node **head,dataPack *delDataPack)
 {
-    watchDogNode *p,*q,*r;
-    p = (watchDogNode *)malloc(sizeof(watchDogNode));
-    p->dataPack = DataPack;
-    p->next = NULL;
+    node *p,*q,*r;
+    p = *head;
 
-    if ( head == NULL)
+    if(delDataPack== NULL)
     {
-        head = p;
-    }
-    else
-    {
-        q = head;
-        while(q->next != NULL)
+        return NULL;
+        if( delDataPack->Data.WatchDog == NULL )
         {
-            q = q->next;
+            return NULL;
         }
-        p->next = p;
     }
-    return head;
+
+
+    pthread_t tid = delDataPack->Data.WatchDog.tid;
+    q = p;
+    while(p->next != NULL)
+    {
+        if ( p->DataPack->Data.WatchDog.tid ==  tid)
+        {
+            q->next = p->next;
+            free(p);
+            p = NULL;
+            break;
+        }
+        q = p;
+        p = p->next;
+    }
+    return *head;
 }
 
 #endif //_LINKED_LIST_
