@@ -1,10 +1,10 @@
-target = server
+target = client 
 GCC = gcc 
 
 vpath %.h ../header
-OBJS = server.o
+OBJS = client.o
 SRCS = $(OBJS, .o=.c)
-HDRS = dataStruct.h globalVar.h threadFunc.h
+HDRS = dataStruct.h globalVar.h
  
 $(target) : $(OBJS)
 	$(GCC) -o $(target) $(OBJS)
@@ -13,4 +13,7 @@ $(target) : $(OBJS)
 	$(GCC) -g -c $< 
 
 $(SRCS) : $(HDRS)
+
+clean:
+	-rm *.o $(target)
  

@@ -26,8 +26,8 @@ void serverConnect( int clientPID,char *serverResponse)
         strcpy(QueryString.query,clientQueryMsg);
         /*start taking input from client and send the request to the server*/
 
-        MsgPack.QueryString = QueryString;
-        MsgPack.structId = QUERY_STRING;
+        MsgPack.DataPack.Data.QueryString = QueryString;
+        MsgPack.DataPack.structId = QUERY_STRING;
         MsgPack.endOfPacket = 0;
         mq.msgType = key;
         mq.msgPk = MsgPack;
@@ -47,8 +47,8 @@ void serverConnect( int clientPID,char *serverResponse)
             break;
         }
 
-        MsgPack.QueryResult = QueryResult;
-        MsgPack.structId = QUERY_RESULT;
+        MsgPack.DataPack.Data.QueryResult = QueryResult;
+        MsgPack.DataPack.structId = QUERY_RESULT;
         MsgPack.endOfPacket = 0;
         mq.msgType = key;
         mq.msgPk = MsgPack;
@@ -57,9 +57,9 @@ void serverConnect( int clientPID,char *serverResponse)
 
         if( msgRet !=-1 )
         {
-            if(mq.msgPk.structId == QUERY_RESULT )
+            if(mq.msgPk.DataPack.structId == QUERY_RESULT )
             {
-                QueryResult = (mq.msgPk.QueryResult);
+                QueryResult = (mq.msgPk.DataPack.Data.QueryResult);
                 printf(" client QueryResult = %s\n",QueryResult.result);
             }
             else
@@ -83,8 +83,8 @@ int main()
 
     clientPID = ClientInfo.ClientPID = getpid();
     printf("Client PID = %d \n",ClientInfo.ClientPID);
-    MsgPack.ClientInfo = ClientInfo;
-    MsgPack.structId = CLIENT_INFO;
+    MsgPack.DataPack.Data.ClientInfo = ClientInfo;
+    MsgPack.DataPack.structId = CLIENT_INFO;
     MsgPack.endOfPacket = 0;
     mq.msgType = CLIENT_START;
     mq.msgPk = MsgPack;
@@ -106,7 +106,7 @@ int main()
 
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 )!=-1 )
         {
-            ServerAck = (mq.msgPk.ServerAck);
+            ServerAck = (mq.msgPk.DataPack.Data.ServerAck);
             printf(" Server ACK = %s\n",ServerAck.msg);
             if(strcmp(ServerAck.msg,SERVER_CONNECTED) == 0 )
             {
