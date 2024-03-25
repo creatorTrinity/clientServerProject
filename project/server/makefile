@@ -13,4 +13,7 @@ $(target) : $(OBJS)
 	$(GCC) -g -c $< 
 
 $(SRCS) : $(HDRS)
+
+clean:
+	-rm *.o $(target)
  

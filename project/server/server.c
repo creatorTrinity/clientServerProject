@@ -23,10 +23,10 @@ int main()
     {
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
-            printf("mq.msgPk.structId = %d\n",mq.msgPk.structId);
+            printf("mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
             if(mq.msgType == CLIENT_START )
             {
-                ClientInfo = (mq.msgPk.ClientInfo);
+                ClientInfo = (mq.msgPk.DataPack.Data.ClientInfo);
                 printf(" client ID = %d\n",ClientInfo.ClientPID);
 
                 assignWorkToThreads(&ClientInfo);
