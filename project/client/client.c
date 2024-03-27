@@ -1,20 +1,20 @@
 #include "../header/dataStruct.h"
 
-void serverConnect( int clientPID,char *serverResponse)
+void serverConnect( int clientMsgId, int clientPID,char *serverResponse)
 {
     int msgRet;
-    int msgId;
-    int key;
+    int msgId = clientMsgId;
+    int key = clientPID;
     char clientQueryMsg[MAX_ARR_SIZE];
     msgQueue mq;
     clientInfo ClientInfo;
     queryString QueryString;
     msgPacket MsgPack;
     queryResult QueryResult;
+    char ch;
+    time_t currentTime;
 
-    key = clientPID;
-    printf("Client creating new message queue with Id =%d\n",key);
-    msgId = msgget(key,0666 | IPC_CREAT);
+
 
     while(1)
     {
@@ -31,7 +31,9 @@ void serverConnect( int clientPID,char *serverResponse)
         MsgPack.endOfPacket = 0;
         mq.msgType = key;
         mq.msgPk = MsgPack;
-
+        time(&currentTime);
+        MsgPack.DataPack.timeStamp = currentTime;
+        printf("\ncurrentTime =%lu\n",currentTime);
         msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
         if(msgRet==-1)
         {
@@ -57,6 +59,7 @@ void serverConnect( int clientPID,char *serverResponse)
 
         if( msgRet !=-1 )
         {
+            printf("mq.msgPk.DataPack.structId = %d\n", mq.msgPk.DataPack.structId);
             if(mq.msgPk.DataPack.structId == QUERY_RESULT )
             {
                 QueryResult = (mq.msgPk.DataPack.Data.QueryResult);
@@ -64,7 +67,9 @@ void serverConnect( int clientPID,char *serverResponse)
             }
             else
             {
-                printf(" client result not defined\n");
+                printf("\n\n !!!client not connected!!!\n\n");
+                //printf("press 'c' for reconnection with server\n");
+                break;
             }
         }
     }
@@ -74,7 +79,10 @@ int main()
 
     int msgId;
     int msgRet;
+    int key;
     int clientPID;
+    time_t currentTime;
+
     msgQueue mq;
     clientInfo ClientInfo;
     serverAck ServerAck;
@@ -84,12 +92,14 @@ int main()
     clientPID = ClientInfo.ClientPID = getpid();
     printf("Client PID = %d \n",ClientInfo.ClientPID);
     MsgPack.DataPack.Data.ClientInfo = ClientInfo;
+    time(&currentTime);
+    MsgPack.DataPack.timeStamp = currentTime;
     MsgPack.DataPack.structId = CLIENT_INFO;
     MsgPack.endOfPacket = 0;
     mq.msgType = CLIENT_START;
     mq.msgPk = MsgPack;
 
-
+    printf("\ncurrentTime =%lu\n",currentTime);
 
     msgId = msgget(KEY,0666 | IPC_CREAT);
     printf("msgId = %d \n",msgId);
@@ -103,6 +113,9 @@ int main()
             break;
         }
 
+        key = clientPID;
+        printf("Client creating new message queue with Id =%d\n",key);
+        msgId = msgget(key,0666 | IPC_CREAT);
 
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 )!=-1 )
         {
@@ -111,13 +124,13 @@ int main()
             if(strcmp(ServerAck.msg,SERVER_CONNECTED) == 0 )
             {
                 printf("server connected successfully\n");
-                serverConnect(clientPID,serverResponse);
+                serverConnect(msgId, clientPID, serverResponse);
                 break;
             }
             else if(strcmp(ServerAck.msg,SERVER_NOT_CONNECTED) == 0 )
             {
                 /*MAY BE AUTHENTICATION ERROR*/
-                printf("unknown error at server response = %s \n",ServerAck.msg);
+                printf("Authentication error at server response = %s \n",ServerAck.msg);
                 continue;
             }
             else if(strcmp(ServerAck.msg,SERVER_UNKNOWN_ERROR) == 0 )
