@@ -2,57 +2,81 @@
 #define _THREAD_FUNC_H_
 
 #include "dataStruct.h"
+#include "linkedList.h"
+#include "fileRW.h"
 
 void prepareClientResponse(char *msg,char *query)
 {
     strcpy(msg,query);
 }
 
-void updateTimeToThread(threadArg **ThreadArgs)
-{
-    /*this part will be updated everytime if the server thread communicate with client*/
-    time(&currentTime);
-    (*ThreadArgs)->WatchDog.lstCmdSent = currentTime;
-    updateWatchDog((*ThreadArgs));
-    /*this part will be updated everytime the thread communicate woth client*/
-}
 void updateWatchDog(threadArg *ThreadArgs)
 {
     dataPack *DataPack = (dataPack *)malloc(sizeof (dataPack));
     DataPack->Data.WatchDog = ThreadArgs->WatchDog;
     addNode(&_WATCH_DOC_ELE_HEAD_,DataPack);
 }
-void *threadWatchDog(void *arg)
+
+void updateTimeToThread(threadArg **ThreadArgs)
 {
-    /*time_t currentTime;
+    time_t currentTime;
+    /*this part will be updated everytime if the server thread communicate with client*/
     time(&currentTime);
+    (*ThreadArgs)->WatchDog.lstCmdSent = currentTime;
+    updateWatchDog(*ThreadArgs);
+    /*this part will be updated everytime the thread communicate woth client*/
+}
+
+void *threadWatchDog()
+{
+    time_t currentTime;
+
     int ret;
-    watchDog *WatchDog;
-    while(1)
+    watchDog WatchDog;
+    node *p,*q,*r;
+
+    while (1)
     {
-        for( int i=0; i < MAX_CLIENT_CONNECTION; i++)
+        p = _WATCH_DOC_ELE_HEAD_;
+        if( p == NULL)
         {
-            WatchDog = _WATCH_DOC_THREAD_ELEMENT_[i];
-            if( currentTime - WatchDog.lstCmdSent > CONNECTION_TIME_OUT_SECONDS )
+            printf("\nwatch DOG is going for sleep no node \n");
+            sleep(WATCHDOG_SLEEP_SECONDS);
+            continue;
+        }
+
+        while(p != NULL)
+        {
+            time(&currentTime);
+            if( p->DataPack == NULL )
+            {
+                break;
+            }
+
+            WatchDog = p->DataPack->Data.WatchDog;
+            printf("currentTime - WatchDog.lstCmdSent = %ld\n",currentTime - WatchDog.lstCmdSent);
+            if( (currentTime - WatchDog.lstCmdSent ) > CONNECTION_TIME_OUT_SECONDS )
             {
                 printf("main(): sending cancellation request\n");
                 ret = pthread_cancel(WatchDog.tid);
                 if (ret != 0)
                 {
-                    handle_error_en(s, "pthread_cancel");
+                    perror( "Thread pthread_cancel ERROR!!! \n");
                 }
                 else
                 {
-                    free(WatchDog);
-                    WatchDog = NULL;
+                    removeWatchDogNode(&_WATCH_DOC_ELE_HEAD_,p);
+                    printf("Thread cancellation request success %lu\n",WatchDog.tid);
                 }
             }
+            p = p->next;
         }
         printf("\nwatch DOG is going for sleep\n");
-        sleep(CONNECTION_TIME_OUT_SECONDS);
-    }*/
+        sleep(WATCHDOG_SLEEP_SECONDS);
+    }
     return NULL;
 }
+
 void *myThreadFunc(void *arg)
 {
     threadArg *ThreadArgs = (threadArg *)arg;
@@ -77,14 +101,22 @@ void *myThreadFunc(void *arg)
     printf(" thread id = %lu\n",threadId);
     printf(" Started serving the client id = %d\n",ThreadArgs->ClientInfo->ClientPID);
 
+
     strcpy(ServerAck.msg, SERVER_CONNECTED);
     MsgPack.DataPack.Data.ServerAck = ServerAck;
+    time(&currentTime);
+    MsgPack.DataPack.timeStamp = currentTime;
     MsgPack.DataPack.structId = SERVER_ACK;
     MsgPack.endOfPacket = 0;
     mq.msgType = CLIENT_START;
     mq.msgPk = MsgPack;
-    msgId = msgget(KEY,0666 | IPC_CREAT);
+    //msgId = msgget(KEY,0666 | IPC_CREAT);
     printf(" sending ACK message from thread id = %lu\n", threadId);
+
+    key = ThreadArgs->ClientInfo->ClientPID;
+    printf("server Thread creating new message queue with Id =%d\n",key);
+    msgId = msgget(key,0666 | IPC_CREAT);
+
     msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
 
     if(msgRet==-1)
@@ -94,19 +126,17 @@ void *myThreadFunc(void *arg)
         return NULL;
     }
 
-    key = ThreadArgs->ClientInfo->ClientPID;
-    printf("server Thread creating new message queue with Id =%d\n",key);
-    msgId = msgget(key,0666 | IPC_CREAT);
+
 
     /*updating the watch Dog attributes in the linked list _WATCH_DOC_ELE_HEAD_*/
     ThreadArgs->WatchDog.tid = threadId;
     ThreadArgs->WatchDog.clientMsgId = msgId;
-    ThreadArgs->WatchDog.serverMsgId = ThreadArgs.serverMsgId;
+    ThreadArgs->WatchDog.serverMsgId = ThreadArgs->serverMsgId;
     ThreadArgs->WatchDog.clientKey = key;
     ThreadArgs->WatchDog.serverKey = KEY;
 
     /*this part will be updated everytime if the server thread communicate with client*/
-    updateTimeToThread(&hreadArgs);
+    //updateTimeToThread(&ThreadArgs);
     /*this part will be updated everytime if the server thread communicate with client*/
 
     while(1)
@@ -120,7 +150,7 @@ void *myThreadFunc(void *arg)
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
             printf("mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
-
+            time(&currentTime);
             if(mq.msgPk.DataPack.structId == EMP_INFO )
             {
                 Employee = (mq.msgPk.DataPack.Data.Employee);
@@ -141,12 +171,12 @@ void *myThreadFunc(void *arg)
                 QueryString = (mq.msgPk.DataPack.Data.QueryString);
                 if(strcmp(mq.msgPk.DataPack.Data.QueryString.query,"exit") == 0 )
                 {
-                    printf("thread received client EXIT request\n");
+                    printf("thread received client ( %d ) EXIT request\n",key);
                     break;
                 }
                 else
                 {
-                    printf(" Thread received  client QueryString = %s\n",QueryString.query);
+                    printf(" Thread received  client ( %d ) QueryString = %s\n",key, QueryString.query);
                 }
             }
             else
@@ -160,7 +190,8 @@ void *myThreadFunc(void *arg)
             /* This function will create the query response of a client*/
             strcpy(QueryResult.result,result);
 
-
+            time(&currentTime);
+            MsgPack.DataPack.timeStamp = currentTime;
             MsgPack.DataPack.Data.QueryResult = QueryResult;
             MsgPack.DataPack.structId = QUERY_RESULT;
             MsgPack.endOfPacket = 0;
@@ -176,7 +207,7 @@ void *myThreadFunc(void *arg)
                 break;
             }
             /*this part will be updated everytime if the server thread communicate with client*/
-            updateTimeToThread(&hreadArgs);
+            //updateTimeToThread(&ThreadArgs);
             /*this part will be updated everytime if the server thread communicate with client*/
         }
         else
@@ -189,6 +220,20 @@ void *myThreadFunc(void *arg)
     pthread_exit(NULL);
 }
 
+pthread_t assignWorkToWatchDog()
+{
+    pthread_t tid;
+    int ret;
+
+    ret = pthread_create(&tid, NULL, threadWatchDog, NULL);
+    if( ret == -1 )
+    {
+        printf("Fail to create Watch Dog thread, Exiting...\n");
+        return ret;
+    }
+    return tid;
+}
+
 pthread_t assignWorkToThreads(int serverMsgId, clientInfo *ClientInfo)
 {
     pthread_t tid;
@@ -197,6 +242,7 @@ pthread_t assignWorkToThreads(int serverMsgId, clientInfo *ClientInfo)
     ThreadArgs->ClientInfo = ClientInfo;
     ThreadArgs->MsgQueue = (msgQueue *)malloc(sizeof (msgQueue));
     ThreadArgs->MsgQueue->msgType = ClientInfo->ClientPID;
+    ThreadArgs->serverMsgId = serverMsgId;
 
     ret = pthread_create(&tid, NULL, myThreadFunc, (void*)ThreadArgs);
     if( ret == -1 )

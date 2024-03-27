@@ -9,8 +9,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
 
 #include "globalVar.h"
+
 
 
 typedef struct employee
@@ -22,6 +24,7 @@ typedef struct employee
     float experience;
     bool projectAllocated;
     int orderSeq;
+    char skillSet[NO_OF_SKILLS][SKILLS_LEN];
 }employee;
 
 typedef struct queryString
@@ -74,6 +77,7 @@ typedef union data
 typedef struct dataPack
 {
     data Data;
+    time_t timeStamp;
     int structId;                           //EMP or CLIENT_INFO or QUERY or SERVER_ACK
 }dataPack;
 
@@ -106,7 +110,9 @@ typedef struct node
     struct node *next;
 }node;
 
-dataPack *_WATCH_DOC_ELE_HEAD_= NULL;
+node *_WATCH_DOC_ELE_HEAD_ = NULL;
+volatile int _SERVER_MSG_ID_;
+node *_EMP_DB_DATA_LIST_ = NULL;
 
 
 #endif //_DATA_STRUCT_

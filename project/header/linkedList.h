@@ -1,12 +1,14 @@
 #ifndef _LINKED_LIST_
 #define _LINKED_LIST_
+
 #include "dataStruct.h"
+
 
 node* addNode(node **head,dataPack *DataPack)
 {
     node *p,*q,*r;
     p = (node *)malloc(sizeof(node));
-    p->dataPack = DataPack;
+    p->DataPack = DataPack;
     p->next = NULL;
 
     if ( *head == NULL)
@@ -25,34 +27,81 @@ node* addNode(node **head,dataPack *DataPack)
     return *head;
 }
 
-node* removeWatchDogNode(node **head,dataPack *delDataPack)
+void printLinkedList(node *_EMP_DB_DATA_LIST_)
+{
+    node *p;
+    employee Employee;
+    if(_EMP_DB_DATA_LIST_ == NULL)
+    {
+        printf("\nthe Linked list is empty\n");
+        return;
+    }
+    p = _EMP_DB_DATA_LIST_;
+    printf("\nGOING TO PRINT THE EMPDATA LINKED LIST\n");
+    while(p != NULL)
+    {
+        if(p->DataPack->structId == EMP_INFO)
+        {
+            Employee = p->DataPack->Data.Employee;
+            printf("Employee first name = %s \n",Employee.firstName);
+            printf("Employee last name = %s \n",Employee.lastName);
+            printf("Employee experience = %f \n",Employee.experience);
+            printf("Employee skillSet 0 = %s \n",Employee.skillSet[0]);
+            printf("Employee skillSet 1 = %s \n",Employee.skillSet[1]);
+            printf("Employee skillSet 2 = %s \n",Employee.skillSet[2]);
+            printf("Employee skillSet 3 = %s \n",Employee.skillSet[3]);
+            printf("\n");
+        }
+        else
+        {
+            printf("\nunknown data structure\n");
+        }
+        p = p->next;
+    }
+    return;
+}
+node* removeWatchDogNode(node **head,node *delNode)
 {
     node *p,*q,*r;
     p = *head;
+    int ind = 0;
 
-    if(delDataPack== NULL)
+    if(delNode == NULL)
     {
         return NULL;
-        if( delDataPack->Data.WatchDog == NULL )
-        {
-            return NULL;
-        }
     }
-
-
-    pthread_t tid = delDataPack->Data.WatchDog.tid;
-    q = p;
-    while(p->next != NULL)
+    else if( delNode->DataPack == NULL )
     {
-        if ( p->DataPack->Data.WatchDog.tid ==  tid)
+        return NULL;
+    }
+    pthread_t tid = delNode->DataPack->Data.WatchDog.tid;
+
+    ind = 0;
+    while(p != NULL)
+    {
+        if ( p->DataPack->Data.WatchDog.tid  == delNode->DataPack->Data.WatchDog.tid)
         {
-            q->next = p->next;
-            free(p);
-            p = NULL;
-            break;
+            if( ind == 0 )
+            {
+                q = p;
+                p = p->next;
+                free(q);
+                q = NULL;
+                *head = p;
+                break;
+            }
+            else
+            {
+                q->next = p->next;
+                free(p);
+                p = NULL;
+                break;
+            }
+            printf("\nwatchdog node removed from list index = %d \n",ind);
         }
         q = p;
         p = p->next;
+        ind++;
     }
     return *head;
 }
