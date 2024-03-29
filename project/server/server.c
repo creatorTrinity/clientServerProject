@@ -66,7 +66,6 @@ int main()
     empDBLinkedList();
     //printLinkedList();
 
-
     if( ret == -1)
     {
         printf("Server INIT process failed!!! Exiting server\n");
