@@ -65,6 +65,10 @@ void serverConnect( int clientMsgId, int clientPID,char *serverResponse)
                 QueryResult = (mq.msgPk.DataPack.Data.QueryResult);
                 printf(" client QueryResult = %s\n",QueryResult.result);
             }
+            else if(mq.msgPk.DataPack.structId == SERVER_ACK)
+            {
+                /*DO resend the packet again*/
+            }
             else
             {
                 printf("\n\n !!!client not connected!!!\n\n");
@@ -76,7 +80,6 @@ void serverConnect( int clientMsgId, int clientPID,char *serverResponse)
 }
 int main()
 {
-
     int msgId;
     int msgRet;
     int key;
@@ -103,47 +106,41 @@ int main()
 
     msgId = msgget(KEY,0666 | IPC_CREAT);
     printf("msgId = %d \n",msgId);
-    while(1)
+
+    msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+    if(msgRet==-1)
     {
-        msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
-        if(msgRet==-1)
-        {
-            perror("msg Send error: ");
-            printf("Client msg not send\n");
-            break;
-        }
+        perror("msg Send error: ");
+        printf("Client msg not send\n");
+    }
 
-        key = clientPID;
-        printf("Client creating new message queue with Id =%d\n",key);
-        msgId = msgget(key,0666 | IPC_CREAT);
+    key = clientPID;
+    printf("Client creating new message queue with Id =%d\n",key);
+    msgId = msgget(key,0666 | IPC_CREAT);
 
-        if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 )!=-1 )
+    if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 )!=-1 )
+    {
+        ServerAck = (mq.msgPk.DataPack.Data.ServerAck);
+        printf(" Server ACK = %s\n",ServerAck.msg);
+        if(strcmp(ServerAck.msg,SERVER_CONNECTED) == 0 )
         {
-            ServerAck = (mq.msgPk.DataPack.Data.ServerAck);
-            printf(" Server ACK = %s\n",ServerAck.msg);
-            if(strcmp(ServerAck.msg,SERVER_CONNECTED) == 0 )
-            {
-                printf("server connected successfully\n");
-                serverConnect(msgId, clientPID, serverResponse);
-                break;
-            }
-            else if(strcmp(ServerAck.msg,SERVER_NOT_CONNECTED) == 0 )
-            {
-                /*MAY BE AUTHENTICATION ERROR*/
-                printf("Authentication error at server response = %s \n",ServerAck.msg);
-                continue;
-            }
-            else if(strcmp(ServerAck.msg,SERVER_UNKNOWN_ERROR) == 0 )
-            {
-                break;
-            }
+            printf("server connected successfully\n");
+            serverConnect(msgId, clientPID, serverResponse);
         }
-        else
+        else if(strcmp(ServerAck.msg,SERVER_NOT_CONNECTED) == 0 )
         {
-            perror("Message receive Error :");
-            break;
+            /*MAY BE AUTHENTICATION ERROR*/
+            printf("Authentication error at server response = %s \n",ServerAck.msg);
+
         }
-        getchar();
+        else if(strcmp(ServerAck.msg,SERVER_UNKNOWN_ERROR) == 0 )
+        {
+
+        }
+    }
+    else
+    {
+        perror("Message receive Error :");
     }
 }
 
