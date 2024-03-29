@@ -44,13 +44,14 @@ int fileInsertData()
     strcpy(Employee.skillSet[1],"C++");
     strcpy(Employee.skillSet[2],"JAVA");
     strcpy(Employee.skillSet[3],"PYTHON");
+    sprintf(Employee.PK,"%s%s%d",Employee.firstName,Employee.lastName,Employee.empId);
 
     Employee1.empId = 2;
     strcpy(Employee1.contactNo , "9836900012");
     Employee1.experience = 4;
     strcpy(Employee1.firstName , "RAM");
     strcpy(Employee1.lastName , "LALA");
-    Employee1.orderSeq = 0;
+    Employee1.orderSeq = 1;
     Employee1.projectAllocated = false;
     Employee1.experience = 2.5;
 
@@ -59,7 +60,7 @@ int fileInsertData()
     strcpy(Employee1.skillSet[1],"C++");
     strcpy(Employee1.skillSet[2],"JAVA");
     strcpy(Employee1.skillSet[3],"PYTHON");
-
+    sprintf(Employee1.PK,"%s%s%d",Employee1.firstName,Employee1.lastName,Employee1.empId);
 
     infile = fopen(_EMPDB_PATH_,"wb");
     if(infile == NULL)

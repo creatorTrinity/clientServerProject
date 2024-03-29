@@ -4,10 +4,13 @@
 #include "dataStruct.h"
 #include "linkedList.h"
 #include "fileRW.h"
+#include "sortBubble.h"
 
 void prepareClientResponse(char *msg,char *query)
 {
     strcpy(msg,query);
+    sortLinkedList(&_EMP_DB_DATA_LIST_,query);
+    printLinkedList(_EMP_DB_DATA_LIST_);
 }
 
 void updateWatchDog(threadArg *ThreadArgs)
@@ -183,6 +186,26 @@ void *myThreadFunc(void *arg)
             {
                 printf("WHILE myThreadFunc:::Server ignoring Bad request from client\n");
                 printf("Ignoring the request\n");
+
+                /*strcpy(ServerAck.msg, SERVER_PCK_ERR);
+                MsgPack.DataPack.Data.ServerAck = ServerAck;
+                time(&currentTime);
+                MsgPack.DataPack.timeStamp = currentTime;
+                MsgPack.DataPack.structId = SERVER_ACK;
+                MsgPack.endOfPacket = 0;
+                mq.msgType = CLIENT_START;
+                mq.msgPk = MsgPack;
+                //msgId = msgget(KEY,0666 | IPC_CREAT);
+                printf(" sending ACK message from thread id = %lu\n", threadId);
+
+                msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+                if(msgRet==-1)
+                {
+                    perror("WHILE myThreadFunc:::msg Send error: ");
+                    printf("WHILE myThreadFunc:::Server msg not send\n");
+                    break;
+                }*/
+                continue;
             }
 
             /* This function will create the query response of a client*/

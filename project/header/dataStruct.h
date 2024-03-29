@@ -11,8 +11,8 @@
 #include <time.h>
 #include <signal.h>
 
-#include "globalVar.h"
 
+#include "globalVar.h"
 
 
 typedef struct employee
@@ -24,13 +24,13 @@ typedef struct employee
     float experience;
     bool projectAllocated;
     int orderSeq;
+    char PK[PK_SIZE];
     char skillSet[NO_OF_SKILLS][SKILLS_LEN];
 }employee;
 
 typedef struct queryString
 {
     char query[MAX_ARR_SIZE];
-
 }queryString;
 
 typedef struct queryResult

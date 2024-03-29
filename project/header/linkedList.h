@@ -2,6 +2,7 @@
 #define _LINKED_LIST_
 
 #include "dataStruct.h"
+#include "sortBubble.h"
 
 
 node* addNode(node **head,dataPack *DataPack)
@@ -60,6 +61,44 @@ void printLinkedList(node *_EMP_DB_DATA_LIST_)
     }
     return;
 }
+
+node* sortLinkedList(node **head,char *queryStr)
+{
+    node *p;
+    employee Employee;
+    if(_EMP_DB_DATA_LIST_ == NULL)
+    {
+        printf("\nthe Linked list is empty\n");
+        return NULL;
+    }
+    p = _EMP_DB_DATA_LIST_;
+    printf("\nGOING TO PRINT THE EMPDATA LINKED LIST\n");
+    while(p != NULL)
+    {
+        Employee = p->DataPack->Data.Employee;
+        printf("Employee first name = %s \n",Employee.firstName);
+        printf("Employee last name = %s \n",Employee.lastName);
+        printf("Employee experience = %f \n",Employee.experience);
+        printf("Employee skillSet 0 = %s \n",Employee.skillSet[0]);
+        printf("Employee skillSet 1 = %s \n",Employee.skillSet[1]);
+        printf("Employee skillSet 2 = %s \n",Employee.skillSet[2]);
+        printf("Employee skillSet 3 = %s \n",Employee.skillSet[3]);
+        printf("\n");
+
+        if(p->DataPack->structId == EMP_INFO)
+        {
+            bubbleSort(&_EMP_DB_DATA_LIST_, queryStr);
+        }
+        else
+        {
+            printf("\nUnhandled query option\n");
+        }
+        p = p->next;
+    }
+    return _EMP_DB_DATA_LIST_;
+}
+
+
 node* removeWatchDogNode(node **head,node *delNode)
 {
     node *p,*q,*r;
