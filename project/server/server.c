@@ -62,9 +62,14 @@ int main()
     //ret = init();
     //data insert into empDB
     fileInsertData();
+    //printf("--------------------------------------------");
     //fileReadData();
+    //printf("--------------------------------------------");
     empDBLinkedList();
-    //printLinkedList();
+    printf("********************************************");
+    printLinkedList(_EMP_DB_DATA_LIST_);
+    printf("********************************************");
+
 
     if( ret == -1)
     {
