@@ -20,14 +20,15 @@
 #define SERVER_PCK_ERR "PCK_ERR"
 #define SERVER_UNKNOWN_ERROR "FAILED"
 
-const char QUERY_OPTION_1_1[] = "1.1";
-const char QUERY_OPTION_1_2[] = "1.2";
-const char QUERY_OPTION_1_3[] = "1.3";
-const char QUERY_OPTION_2_1[] = "2.1";
-const char QUERY_OPTION_2_2[] = "2.2";
-const char QUERY_OPTION_2_3[] = "2.3";
-const char QUERY_OPTION_3_0[] = "3.0";
-const char QUERY_OPTION_4_0[] = "4.0";
+const char QUERY_OPTION_1_1[] = "1.1"; /*sort by first name*/
+const char QUERY_OPTION_1_2[] = "1.2"; /*sort by last name*/
+const char QUERY_OPTION_1_3[] = "1.3"; /*sort by emp ID*/
+const char QUERY_OPTION_1_4[] = "1.4"; /*sort by year of experience*/
+const char QUERY_OPTION_2_1[] = "2.1"; /*search by first name*/
+const char QUERY_OPTION_2_2[] = "2.2"; /*search by last name*/
+const char QUERY_OPTION_2_3[] = "2.3"; /*search by emp ID*/
+const char QUERY_OPTION_3_0[] = "3.0"; /*search records by skill set*/
+const char QUERY_OPTION_4_0[] = "4.0"; /*search records by no of experience*/
 
 enum enumMsgType{CLIENT_START=1};
 enum enumStructID{EMP_INFO,CLIENT_INFO,QUERY_RESULT,QUERY_STRING,SERVER_ACK,WATCH_DOG};

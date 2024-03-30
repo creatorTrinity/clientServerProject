@@ -5,13 +5,9 @@
 #include "linkedList.h"
 #include "fileRW.h"
 #include "sortBubble.h"
+#include "queryOperation.h"
 
-void prepareClientResponse(char *msg,char *query)
-{
-    strcpy(msg,query);
-    sortLinkedList(&_EMP_DB_DATA_LIST_,query);
-    printLinkedList(_EMP_DB_DATA_LIST_);
-}
+
 
 void updateWatchDog(threadArg *ThreadArgs)
 {
@@ -152,7 +148,7 @@ void *myThreadFunc(void *arg)
 
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
-            printf("mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
+            printf("server received mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
             time(&currentTime);
             if(mq.msgPk.DataPack.structId == EMP_INFO )
             {

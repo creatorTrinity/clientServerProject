@@ -49,15 +49,15 @@ int fileInsertData()
     Employee1.empId = 2;
     strcpy(Employee1.contactNo , "9836900012");
     Employee1.experience = 4;
-    strcpy(Employee1.firstName , "RAM");
+    strcpy(Employee1.firstName , "BAM");
     strcpy(Employee1.lastName , "LALA");
     Employee1.orderSeq = 1;
     Employee1.projectAllocated = false;
     Employee1.experience = 2.5;
 
     memset(Employee1.skillSet,0,sizeof (Employee1.skillSet));
-    strcpy(Employee1.skillSet[0],"C");
-    strcpy(Employee1.skillSet[1],"C++");
+    strcpy(Employee1.skillSet[0],".NET");
+    strcpy(Employee1.skillSet[1],"C#");
     strcpy(Employee1.skillSet[2],"JAVA");
     strcpy(Employee1.skillSet[3],"PYTHON");
     sprintf(Employee1.PK,"%s%s%d",Employee1.firstName,Employee1.lastName,Employee1.empId);
@@ -117,6 +117,8 @@ int fileReadData()
 int empDBLinkedList()
 {
     FILE *infile;
+    dataPack *DataPack;
+    dataPack *BLNKDataPack;
     int flag;
     employee Employee;
     infile = fopen(_EMPDB_PATH_,"rb");
@@ -137,21 +139,27 @@ int empDBLinkedList()
         {
             break;
         }
-        dataPack *DataPack = (dataPack *)malloc(sizeof (dataPack));
+        DataPack = (dataPack *)malloc(sizeof (dataPack));
         memcpy(&DataPack->Data.Employee,&Employee,sizeof (Employee));
+        DataPack->blank = false;
         DataPack->structId = EMP_INFO;
         addNode(&_EMP_DB_DATA_LIST_,DataPack);
-        printf("Employee first name = %s \n",Employee.firstName);
+        BLNKDataPack = (dataPack *)malloc(sizeof (dataPack));
+        BLNKDataPack->blank = true;
+        addNode(&_EMP_DB_DATA_CONTAINER_LIST_,BLNKDataPack);
+
+
+        /*printf("Employee first name = %s \n",Employee.firstName);
         printf("Employee last name = %s \n",Employee.lastName);
         printf("Employee experience = %f \n",Employee.experience);
         printf("Employee skillSet 0 = %s \n",Employee.skillSet[0]);
         printf("Employee skillSet 1 = %s \n",Employee.skillSet[1]);
         printf("Employee skillSet 2 = %s \n",Employee.skillSet[2]);
-        printf("Employee skillSet 3 = %s \n",Employee.skillSet[3]);
+        printf("Employee skillSet 3 = %s \n",Employee.skillSet[3]);*/
 
     }
     fclose(infile);
-    printLinkedList(_EMP_DB_DATA_LIST_);
+    //printLinkedList(_EMP_DB_DATA_LIST_);
 }
 
 #endif //_FILE_RW_

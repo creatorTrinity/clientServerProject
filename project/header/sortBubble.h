@@ -3,29 +3,11 @@
 
 #include "dataStruct.h"
 
-/*void bubbleSort(int *a, int n)
-{
-
-    int c;
-    for(int i=0;i<n;i++)
-    {
-       for(int j=i+1;j<n;j++)
-       {
-          if( a[i] >= a[j] )
-          {
-              c = a[j];
-              a[j] = a[i];
-              a[i] = c;
-          }
-       }
-    }
-    return ;
-}*/
 bool compareFunc(node *p,node *q, const char *str)
 {
     if( strcmp(str, QUERY_OPTION_1_1) == 0 )
     {
-        //sort by first name
+        /*sorted by first name*/
         if( strcmp( p->DataPack->Data.Employee.firstName, q->DataPack->Data.Employee.firstName) >= 0 )
             return true;
         else
@@ -33,7 +15,7 @@ bool compareFunc(node *p,node *q, const char *str)
     }
     else if( strcmp(str, QUERY_OPTION_1_2) == 0 )
     {
-        //sort by second name
+        /*sorted by last name*/
         if( strcmp( p->DataPack->Data.Employee.lastName, q->DataPack->Data.Employee.lastName) >= 0 )
             return true;
         else
@@ -41,35 +23,43 @@ bool compareFunc(node *p,node *q, const char *str)
     }
     else if( strcmp(str, QUERY_OPTION_1_3) == 0 )
     {
-        //sort by emp id
+        /*sorted by emp ID*/
         if( p->DataPack->Data.Employee.empId, q->DataPack->Data.Employee.empId >= 0 )
+            return true;
+        else
+            return false;
+    }
+    else if( strcmp(str, QUERY_OPTION_1_4) == 0 )
+    {
+        /*sorted by emp ID*/
+        if( p->DataPack->Data.Employee.experience >= q->DataPack->Data.Employee.experience )
             return true;
         else
             return false;
     }
     else if( strcmp(str, QUERY_OPTION_2_1) == 0 )
     {
-        //search by first name
+        /*search by first name*/
         return false;
     }
     else if( strcmp(str, QUERY_OPTION_2_2) == 0 )
     {
-        //search by last name
+        /*search by last name*/
         return false;
     }
     else if( strcmp(str, QUERY_OPTION_2_3) == 0 )
     {
-        //search by emp id
+        /*search by emp ID*/
         return false;
     }
     else if( strcmp(str, QUERY_OPTION_3_0) == 0 )
     {
-        //List all the record with particular skill set
+        /*search records by particular skill set*/
         return false;
     }
     else if( strcmp(str, QUERY_OPTION_4_0) == 0 )
     {
-        // List all the records based on no of years of experience
+        /*search records by no of experience*/
         return false;
     }
     else
@@ -84,6 +74,7 @@ node* bubbleSort(node **head, const char *str)
     int c;
     p = *head;
     q = p;
+    dataPack DataPack;
 
     while(p != NULL)
     {
@@ -92,9 +83,9 @@ node* bubbleSort(node **head, const char *str)
         {
             if( compareFunc(p,q,str) )
             {
-                r = q;
-                q->DataPack = p->DataPack;
-                p->DataPack = r->DataPack;
+                memcpy(&DataPack, q->DataPack, sizeof (dataPack));
+                memcpy(q->DataPack, p->DataPack, sizeof (dataPack));
+                memcpy(p->DataPack, &DataPack, sizeof (dataPack));
             }
             q = q->next;
         }
