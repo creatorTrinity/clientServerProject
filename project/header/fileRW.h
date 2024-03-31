@@ -118,7 +118,6 @@ int empDBLinkedList()
 {
     FILE *infile;
     dataPack *DataPack;
-    dataPack *BLNKDataPack;
     int flag;
     employee Employee;
     infile = fopen(_EMPDB_PATH_,"rb");
@@ -144,11 +143,6 @@ int empDBLinkedList()
         DataPack->blank = false;
         DataPack->structId = EMP_INFO;
         addNode(&_EMP_DB_DATA_LIST_,DataPack);
-        BLNKDataPack = (dataPack *)malloc(sizeof (dataPack));
-        BLNKDataPack->blank = true;
-        addNode(&_EMP_DB_DATA_CONTAINER_LIST_,BLNKDataPack);
-
-
         /*printf("Employee first name = %s \n",Employee.firstName);
         printf("Employee last name = %s \n",Employee.lastName);
         printf("Employee experience = %f \n",Employee.experience);

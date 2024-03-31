@@ -6,9 +6,10 @@
 void searchRecords(node *head, node **container, const char *queryStr,const char *dataToSearch)
 {
     node *p,*q,*r;
-    node *blank = *container;
+    node *blank = NULL;
     char temp[MAX_ARR_SIZE];
 
+    blank = *container;
     blank->DataPack->blank = true;
     p = head;
 
@@ -79,10 +80,13 @@ void searchRecords(node *head, node **container, const char *queryStr,const char
             printf("\nUnhandled query option\n");
         }
         p = p->next;
-        if( blank->DataPack->blank = false )
+        if( blank->DataPack->blank == false )
         {
             blank = blank->next;
-            blank->DataPack->blank = true;
+            if( blank != NULL )
+            {
+                blank->DataPack->blank = true;
+            }
         }
     }
 }

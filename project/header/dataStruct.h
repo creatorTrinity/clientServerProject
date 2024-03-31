@@ -114,7 +114,7 @@ typedef struct node
 node *_WATCH_DOC_ELE_HEAD_ = NULL;
 volatile int _SERVER_MSG_ID_;
 node *_EMP_DB_DATA_LIST_ = NULL;
-node *_EMP_DB_DATA_CONTAINER_LIST_ = NULL;
+
 
 
 #endif //_DATA_STRUCT_

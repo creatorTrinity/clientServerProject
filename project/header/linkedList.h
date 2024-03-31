@@ -27,7 +27,38 @@ node* addNode(node **head,dataPack *DataPack)
     }
     return *head;
 }
+node* copyLinkedList(node **dest, node *src)
+{
+   node *p,*q,*r;
+    if(src == NULL)
+    {
+        printf("\nthe Linked list is empty\n");
+        dest = NULL;
+        return NULL;
+    }
 
+    q = (node *)malloc(sizeof(node));
+    q->DataPack = (dataPack *)malloc(sizeof (dataPack));
+    q->DataPack->blank = true;
+    q->next = NULL;
+    *dest = q;
+
+    p = src;
+    p = p->next;
+
+    while(p != NULL)
+    {
+        r = (node *)malloc(sizeof(node));
+        r->DataPack = (dataPack *)malloc(sizeof (dataPack));
+        r->DataPack->blank = true;
+        r->next = NULL;
+
+        q->next = r;
+        q = r;
+        p = p->next;
+    }
+    return *dest;
+}
 void printLinkedList(node *_EMP_DB_DATA_LIST_)
 {
     node *p;

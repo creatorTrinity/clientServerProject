@@ -5,7 +5,7 @@
 #include "srchRecords.h"
 #include "linkedList.h"
 
-void prepareClientResponse(char *msg,char *query)
+void prepareClientResponse(char *msg, char *query, node *_EMP_DB_DATA_CONTAINER_LIST_)
 {
 
     char *token;

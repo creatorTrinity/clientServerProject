@@ -84,7 +84,9 @@ void *myThreadFunc(void *arg)
     int msgId;
     int key;
     char result[MAX_ARR_SIZE];
+
     watchDog *WatchDog;
+    node *EMP_DB_DATA_CONTAINER_LIST = NULL;
 
     msgQueue mq;
     msgPacket MsgPack;
@@ -137,7 +139,9 @@ void *myThreadFunc(void *arg)
     /*this part will be updated everytime if the server thread communicate with client*/
     //updateTimeToThread(&ThreadArgs);
     /*this part will be updated everytime if the server thread communicate with client*/
-
+    copyLinkedList(&EMP_DB_DATA_CONTAINER_LIST,_EMP_DB_DATA_LIST_);
+    printf("goig to print EMP_DB_DATA_CONTAINER_LIST\n");
+    printLinkedList(EMP_DB_DATA_CONTAINER_LIST);
     while(1)
     {
         MsgPack.DataPack.Data.QueryString = QueryString;
@@ -205,7 +209,7 @@ void *myThreadFunc(void *arg)
             }
 
             /* This function will create the query response of a client*/
-            prepareClientResponse(result,QueryString.query);
+            prepareClientResponse(result,QueryString.query,EMP_DB_DATA_CONTAINER_LIST);
             /* This function will create the query response of a client*/
             strcpy(QueryResult.result,result);
 
