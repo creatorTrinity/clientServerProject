@@ -69,14 +69,21 @@ void printContainerLinkedList(node *_EMP_DB_DATA_CONTAINER_LIST_)
 {
     node *p;
     employee Employee;
-    if(_EMP_DB_DATA_LIST_ == NULL)
+    p = _EMP_DB_DATA_CONTAINER_LIST_;
+
+    if(p == NULL)
     {
         printf("\nthe Linked list is empty\n");
         return;
     }
-    p = _EMP_DB_DATA_LIST_;
+    if( p->DataPack->blank == true)
+    {
+        printf("\nthe Linked list is empty\n");
+        return;
+    }
+
     printf("\n--------------------------------------\n");
-    printf("\nGOING TO PRINT THE EMPDATA LINKED LIST\n");
+    printf("\nGOING TO PRINT THE EMPDATA CONTAINER LINKED LIST\n");
     printf("\n--------------------------------------\n");
     while(p != NULL )
     {
