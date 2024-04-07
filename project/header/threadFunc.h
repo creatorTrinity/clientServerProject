@@ -1,7 +1,7 @@
 #ifndef _THREAD_FUNC_H_
 #define _THREAD_FUNC_H_
 
-#include "dataStruct.h"
+//#include "dataStruct.h"
 #include "linkedList.h"
 #include "fileRW.h"
 #include "sortBubble.h"
@@ -150,6 +150,9 @@ void *myThreadFunc(void *arg)
         mq.msgType = key;
         mq.msgPk = MsgPack;
 
+        memset(&QueryString,0,sizeof (queryString));
+        memset(&QueryResult,0,sizeof (queryResult));
+
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
             printf("server received mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
@@ -209,9 +212,11 @@ void *myThreadFunc(void *arg)
             }
 
             /* This function will create the query response of a client*/
-            prepareClientResponse(result,QueryString.query,EMP_DB_DATA_CONTAINER_LIST);
+            prepareClientResponse( &QueryResult,
+                                   &QueryString,
+                                   EMP_DB_DATA_CONTAINER_LIST);
             /* This function will create the query response of a client*/
-            strcpy(QueryResult.result,result);
+            //strcpy(QueryResult.result,result);
 
             time(&currentTime);
             MsgPack.DataPack.timeStamp = currentTime;

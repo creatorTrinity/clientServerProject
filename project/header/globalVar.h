@@ -19,6 +19,7 @@
 #define SERVER_NOT_CONNECTED "NOK"
 #define SERVER_PCK_ERR "PCK_ERR"
 #define SERVER_UNKNOWN_ERROR "FAILED"
+#define OPERATION_SUCCESS "operation successfull"
 
 const char QUERY_OPTION_1_1[] = "1.1"; /*sort by first name*/
 const char QUERY_OPTION_1_2[] = "1.2"; /*sort by last name*/
@@ -29,6 +30,10 @@ const char QUERY_OPTION_2_2[] = "2.2"; /*search by last name*/
 const char QUERY_OPTION_2_3[] = "2.3"; /*search by emp ID*/
 const char QUERY_OPTION_3_0[] = "3.0"; /*search records by skill set*/
 const char QUERY_OPTION_4_0[] = "4.0"; /*search records by no of experience*/
+
+const char QUERY_OPTION_ADD_RECORD[] = "add";
+const char QUERY_OPTION_UPADTE_RECORD[] = "upd";
+const char QUERY_OPTION_DEL_RECORD[] = "del";
 
 enum enumMsgType{CLIENT_START=1};
 enum enumStructID{EMP_INFO,CLIENT_INFO,QUERY_RESULT,QUERY_STRING,SERVER_ACK,WATCH_DOG};

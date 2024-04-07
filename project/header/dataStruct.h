@@ -13,6 +13,7 @@
 
 
 #include "globalVar.h"
+#include "helpingFunc.h"
 
 
 typedef struct employee
@@ -31,11 +32,13 @@ typedef struct employee
 typedef struct queryString
 {
     char query[MAX_ARR_SIZE];
+    employee Employee;                      //EMP
 }queryString;
 
 typedef struct queryResult
 {
     char result[MAX_ARR_SIZE];
+    employee Employee;                      //EMP
 
 }queryResult;
 

@@ -4,12 +4,15 @@
 #include "dataStruct.h"
 #include "sortBubble.h"
 
-
 node* addNode(node **head,dataPack *DataPack)
 {
     node *p,*q,*r;
     p = (node *)malloc(sizeof(node));
-    p->DataPack = DataPack;
+    dataPack *TempDataPack = NULL;
+
+    TempDataPack = (dataPack *)malloc(sizeof (dataPack));
+    memcpy(TempDataPack, DataPack, sizeof (dataPack));
+    p->DataPack = TempDataPack;
     p->next = NULL;
 
     if ( *head == NULL)
@@ -27,6 +30,64 @@ node* addNode(node **head,dataPack *DataPack)
     }
     return *head;
 }
+
+node* addUpdateDeleteNode(node **head,
+                          dataPack *DataPack,
+                          char *queryStr,
+                          int empId,
+                          char *msg)
+{
+    node *p, *q;
+    int indx = 0;
+    p = *head;
+    q = NULL;
+    while(p != NULL)
+    {
+        indx++;
+        if( p->DataPack->Data.Employee.empId == empId )
+        {
+            break;
+        }
+        q = p;
+        p = p->next;
+    }
+
+    if ( p == NULL)
+    {
+        printf("record not found for the EMPID = %d\n",empId);
+        sprintf(msg,"Record not found for the EMPID = <%d>\n",empId);
+        return NULL;
+    }
+
+    if( strcmp(queryStr,QUERY_OPTION_ADD_RECORD) == 0)
+    {
+        addNode(&_EMP_DB_DATA_LIST_, DataPack);
+        sprintf(msg,"Record added for the EMPID = <%d>\n",empId);
+    }
+    else if( strcmp(queryStr,QUERY_OPTION_UPADTE_RECORD) == 0 )
+    {
+        memcpy(&p->DataPack, &p->DataPack, sizeof (dataPack));
+        sprintf(msg,"Record Updated for the EMPID = <%d>\n",empId);
+    }
+    else if( strcmp(queryStr,QUERY_OPTION_DEL_RECORD) == 0)
+    {
+        if( indx == 1)
+        {
+            p = *head;
+            *head = (*head)->next;
+            free(p);
+            p = NULL;
+        }
+        else
+        {
+            q->next = p->next;
+            free(p);
+            p = NULL;
+        }
+        sprintf(msg,"Record deleted for the EMPID = <%d>\n",empId);
+    }
+}
+
 node* copyLinkedList(node **dest, node *src)
 {
    node *p,*q,*r;

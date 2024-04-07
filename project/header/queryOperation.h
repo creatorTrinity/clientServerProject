@@ -4,14 +4,26 @@
 #include "dataStruct.h"
 #include "srchRecords.h"
 #include "linkedList.h"
+#include "fileRW.h"
 
-void prepareClientResponse(char *msg, char *query, node *_EMP_DB_DATA_CONTAINER_LIST_)
+pthread_mutex_t lock;
+
+void prepareClientResponse(queryResult *QueryResult,
+                           queryString *QueryString,
+                           node *_EMP_DB_DATA_CONTAINER_LIST_)
 {
 
+    char query[MAX_ARR_SIZE];
+    char retMsg[MAX_ARR_SIZE];
+    //node *returnNode = NULL;
+    int empId = 0;
     char *token;
+    dataPack DataPack;
     char queryStr[MAX_ARR_SIZE] = "\0";
     char dataToSearch[MAX_ARR_SIZE] = "\0";
-    //strcpy(msg,query);
+
+    strcpy(query,QueryString->query);
+
     token = strtok(query,"-");
     if(token != NULL)
     {
@@ -48,8 +60,37 @@ void prepareClientResponse(char *msg, char *query, node *_EMP_DB_DATA_CONTAINER_
         searchRecords(_EMP_DB_DATA_LIST_, &_EMP_DB_DATA_CONTAINER_LIST_,queryStr,dataToSearch);
         printContainerLinkedList(_EMP_DB_DATA_CONTAINER_LIST_);
     }
+    else if(    strcmp(queryStr, QUERY_OPTION_ADD_RECORD) == 0     /*add one record */
+                || strcmp(query, QUERY_OPTION_UPADTE_RECORD) == 0  /*update record using empID*/
+                || strcmp(query, QUERY_OPTION_DEL_RECORD) == 0     /*delete record using empID*/
+            )
+    {
+        DataPack.structId = EMP_INFO;
+        memset(&DataPack,0,sizeof (dataPack));
+        memcpy(&DataPack.Data.Employee,&QueryString->Employee,sizeof (employee));
+        if(digits_only(dataToSearch))
+        {
+            empId = atoi(dataToSearch);
+            pthread_mutex_lock(&lock);
+            addUpdateDeleteNode(&_EMP_DB_DATA_LIST_,
+                                             &DataPack,
+                                             queryStr,
+                                             empId,
+                                             retMsg);
+
+            fileCommitData(_EMP_DB_DATA_LIST_);
+            strcpy(QueryResult->result,retMsg);
+            pthread_mutex_unlock(&lock);
+        }
+        else
+        {
+            sprintf(QueryResult->result,"<%s> operation need valid emp ID", queryStr);
+            printf("\nUnhandled query option\n");
+        }
+    }
     else
     {
+
         printf("\nUnhandled query option\n");
     }
 }

@@ -4,7 +4,66 @@
 #include "dataStruct.h"
 #include "linkedList.h"
 
+void fillDummyData(employee *arrEmployee, int size)
+{
+    float expCount = 0.2;
 
+    arrEmployee[0].empId = 1;
+    strcpy(arrEmployee[0].contactNo , "9836900011");
+    arrEmployee[0].experience = 10.5;
+    strcpy(arrEmployee[0].firstName , "RAM");
+    strcpy(arrEmployee[0].lastName , "DEV");
+    arrEmployee[0].orderSeq = 0;
+    arrEmployee[0].projectAllocated = true;
+
+
+    memset(arrEmployee[0].skillSet,0,sizeof (arrEmployee[0].skillSet));
+    strcpy(arrEmployee[0].skillSet[0],"C");
+    strcpy(arrEmployee[0].skillSet[1],"C++");
+    strcpy(arrEmployee[0].skillSet[2],"JAVA");
+    strcpy(arrEmployee[0].skillSet[3],"PYTHON");
+    sprintf(arrEmployee[0].PK,"%s%s%d",arrEmployee[0].firstName,arrEmployee[0].lastName,arrEmployee[0].empId);
+
+    arrEmployee[1].empId = 2;
+    strcpy(arrEmployee[1].contactNo , "9836900012");
+    arrEmployee[1].experience = 2.5;
+    strcpy(arrEmployee[1].firstName , "BAM");
+    strcpy(arrEmployee[1].lastName , "LALA");
+    arrEmployee[1].orderSeq = 1;
+    arrEmployee[1].projectAllocated = false;
+
+
+    memset(arrEmployee[1].skillSet,0,sizeof (arrEmployee[1].skillSet));
+    strcpy(arrEmployee[1].skillSet[0],".NET");
+    strcpy(arrEmployee[1].skillSet[1],"C#");
+    strcpy(arrEmployee[1].skillSet[2],"JAVA");
+    strcpy(arrEmployee[1].skillSet[3],"PYTHON");
+    sprintf(arrEmployee[1].PK,"%s%s%d",arrEmployee[1].firstName,arrEmployee[1].lastName,arrEmployee[1].empId);
+
+    for(int i=2; i < size; i++)
+    {
+        if(expCount > 4 )
+        {
+            expCount = 0.2;
+        }
+
+        arrEmployee[i].empId = i + 1;
+        strcpy(arrEmployee[i].contactNo , "9836900012");
+        arrEmployee[i].experience = 2.5 + expCount++;
+        sprintf(arrEmployee[i].firstName , "BAM_%d",i);
+        sprintf(arrEmployee[i].lastName , "LALA_%d",i);
+        arrEmployee[i].orderSeq = 1;
+        arrEmployee[i].projectAllocated = false;
+
+
+        memset(arrEmployee[i].skillSet,0,sizeof (arrEmployee[i].skillSet));
+        strcpy(arrEmployee[i].skillSet[0],".NET");
+        strcpy(arrEmployee[i].skillSet[1],"C#");
+        strcpy(arrEmployee[i].skillSet[2],"JAVA");
+        strcpy(arrEmployee[i].skillSet[3],"PYTHON");
+        sprintf(arrEmployee[i].PK,"%s%s%d",arrEmployee[1].firstName,arrEmployee[1].lastName,arrEmployee[1].empId);
+    }
+}
 int fileInsertData()
 {
     FILE *infile = NULL;
@@ -30,37 +89,8 @@ int fileInsertData()
     }
 
     employee Employee,Employee1;
-    Employee.empId = 1;
-    strcpy(Employee.contactNo , "9836900011");
-    Employee.experience = 4;
-    strcpy(Employee.firstName , "RAM");
-    strcpy(Employee.lastName , "DEV");
-    Employee.orderSeq = 0;
-    Employee.projectAllocated = true;
-    Employee.experience = 10.5;
-
-    memset(Employee.skillSet,0,sizeof (Employee.skillSet));
-    strcpy(Employee.skillSet[0],"C");
-    strcpy(Employee.skillSet[1],"C++");
-    strcpy(Employee.skillSet[2],"JAVA");
-    strcpy(Employee.skillSet[3],"PYTHON");
-    sprintf(Employee.PK,"%s%s%d",Employee.firstName,Employee.lastName,Employee.empId);
-
-    Employee1.empId = 2;
-    strcpy(Employee1.contactNo , "9836900012");
-    Employee1.experience = 4;
-    strcpy(Employee1.firstName , "BAM");
-    strcpy(Employee1.lastName , "LALA");
-    Employee1.orderSeq = 1;
-    Employee1.projectAllocated = false;
-    Employee1.experience = 2.5;
-
-    memset(Employee1.skillSet,0,sizeof (Employee1.skillSet));
-    strcpy(Employee1.skillSet[0],".NET");
-    strcpy(Employee1.skillSet[1],"C#");
-    strcpy(Employee1.skillSet[2],"JAVA");
-    strcpy(Employee1.skillSet[3],"PYTHON");
-    sprintf(Employee1.PK,"%s%s%d",Employee1.firstName,Employee1.lastName,Employee1.empId);
+    employee arrEmployee[30];
+    fillDummyData(arrEmployee,30);
 
     infile = fopen(_EMPDB_PATH_,"wb");
     if(infile == NULL)
@@ -68,8 +98,9 @@ int fileInsertData()
         perror("file opening error::\n");
         return -1;
     }
-    flag = fwrite(&Employee,sizeof (employee), 1, infile);
-    flag = fwrite(&Employee1,sizeof (employee), 1, infile);
+    //flag = fwrite(&Employee,sizeof (employee), 1, infile);
+    //flag = fwrite(&Employee1,sizeof (employee), 1, infile);
+    flag = fwrite(arrEmployee,sizeof (employee), 30, infile);
     if(flag)
     {
         printf("\nfile write successful\n");
@@ -81,7 +112,131 @@ int fileInsertData()
     fclose(infile);
     return 0;
 }
+int fileBackupData()
+{
+    FILE *fptr1, *fptr2;
+    char filename[100], c;
+    time_t currentTime;
+    time(&currentTime);
+    sprintf(filename,"%s_%lu",_EMPDB_PATH_,currentTime);
 
+    printf("\n!!!Taking backup of the old empData  file = %s !!!\n",filename);
+
+    // Open one file for reading
+    fptr1 = fopen(_EMPDB_PATH_, "rb");
+    if (fptr1 == NULL)
+    {
+        printf("Cannot open file %s \n", _EMPDB_PATH_);
+        return 1;
+    }
+
+    printf("\n!!!Taking backup of the old empData into the file = %s !!!\n",filename);
+
+    // Open another file for writing
+    fptr2 = fopen(filename, "wb");
+    if (fptr2 == NULL)
+    {
+        printf("Cannot open file %s \n", filename);
+        return 1;
+    }
+
+    // Read contents from file
+    c = fgetc(fptr1);
+    while (c != EOF)
+    {
+        fputc(c, fptr2);
+        c = fgetc(fptr1);
+    }
+
+    printf("\nContents copied to %s", filename);
+
+    fclose(fptr1);
+    fclose(fptr2);
+    return 0;
+}
+
+
+int fileCommitData(node *_EMP_DB_DATA_LIST_)
+{
+    FILE *infile;
+    int flag;
+    node *p;
+    employee Employee;
+
+    /*taking backup of the old emp database */
+    if(fileBackupData() == 1)
+    {
+        return 1;
+    }
+
+    p = _EMP_DB_DATA_LIST_;
+    if(p == NULL)
+    {
+        printf("\nthe Linked list is empty\n");
+        return 0;
+    }
+    if( p->DataPack->blank == true)
+    {
+        printf("\nthe Linked list is empty\n");
+        return 0;
+    }
+    infile = fopen(_EMPDB_PATH_,"wb");
+    if(infile == NULL)
+    {
+        perror("file opening error::\n");
+        return 1;
+    }
+    printf("\n--------------------------------------\n");
+    printf("\nGOING TO COMMIT THE EMPDATA\n");
+    printf("\n--------------------------------------\n");
+    while(p != NULL )
+    {
+        if( p->DataPack->blank == true)
+            break;
+        if(p->DataPack->structId == EMP_INFO)
+        {
+            flag = fwrite(&(p->DataPack->Data.Employee),
+                          sizeof (employee),
+                          1,
+                          infile);
+
+            //Employee = p->DataPack->Data.Employee;
+            /*printf("Employee ID         = %d \n",Employee.empId);
+            printf("Employee first name = %s \n",Employee.firstName);
+            printf("Employee last name = %s \n",Employee.lastName);
+            printf("Employee experience = %f \n",Employee.experience);
+            printf("Employee skillSet 0 = %s \n",Employee.skillSet[0]);
+            printf("Employee skillSet 1 = %s \n",Employee.skillSet[1]);
+            printf("Employee skillSet 2 = %s \n",Employee.skillSet[2]);
+            printf("Employee skillSet 3 = %s \n",Employee.skillSet[3]);
+            printf("\n");*/
+
+
+
+            if(!flag)
+            {
+                printf("\n!!!fileCommitData::Error file write!!!\n");
+                break;
+            }
+        }
+        else
+        {
+            printf("\nunknown data structure\n");
+        }
+        p = p->next;
+    }
+
+    fclose(infile);
+    if(flag)
+    {
+        printf("\nfileCommitData::file write successful\n");
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
 int fileReadData()
 {
     FILE *infile;
@@ -117,7 +272,7 @@ int fileReadData()
 int empDBLinkedList()
 {
     FILE *infile;
-    dataPack *DataPack;
+    dataPack DataPack;
     int flag;
     employee Employee;
     infile = fopen(_EMPDB_PATH_,"rb");
@@ -138,19 +293,11 @@ int empDBLinkedList()
         {
             break;
         }
-        DataPack = (dataPack *)malloc(sizeof (dataPack));
-        memcpy(&DataPack->Data.Employee,&Employee,sizeof (Employee));
-        DataPack->blank = false;
-        DataPack->structId = EMP_INFO;
-        addNode(&_EMP_DB_DATA_LIST_,DataPack);
-        /*printf("Employee first name = %s \n",Employee.firstName);
-        printf("Employee last name = %s \n",Employee.lastName);
-        printf("Employee experience = %f \n",Employee.experience);
-        printf("Employee skillSet 0 = %s \n",Employee.skillSet[0]);
-        printf("Employee skillSet 1 = %s \n",Employee.skillSet[1]);
-        printf("Employee skillSet 2 = %s \n",Employee.skillSet[2]);
-        printf("Employee skillSet 3 = %s \n",Employee.skillSet[3]);*/
 
+        memcpy(&(DataPack.Data.Employee),&Employee,sizeof (Employee));
+        DataPack.blank = false;
+        DataPack.structId = EMP_INFO;
+        addNode(&_EMP_DB_DATA_LIST_,&DataPack);
     }
     fclose(infile);
     //printLinkedList(_EMP_DB_DATA_LIST_);
