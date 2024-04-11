@@ -7,7 +7,7 @@ bool compareFunc(node *p,node *q, const char *str)
 {
     if( strcmp(str, QUERY_OPTION_1_1) == 0 )
     {
-        /*sorted by first name*/
+        /*sort by first name*/
         if( strcmp( p->DataPack->Data.Employee.firstName, q->DataPack->Data.Employee.firstName) >= 0 )
             return true;
         else
@@ -15,7 +15,7 @@ bool compareFunc(node *p,node *q, const char *str)
     }
     else if( strcmp(str, QUERY_OPTION_1_2) == 0 )
     {
-        /*sorted by last name*/
+        /*sort by last name*/
         if( strcmp( p->DataPack->Data.Employee.lastName, q->DataPack->Data.Employee.lastName) >= 0 )
             return true;
         else
@@ -23,15 +23,15 @@ bool compareFunc(node *p,node *q, const char *str)
     }
     else if( strcmp(str, QUERY_OPTION_1_3) == 0 )
     {
-        /*sorted by emp ID*/
-        if( p->DataPack->Data.Employee.empId, q->DataPack->Data.Employee.empId >= 0 )
+        /*sort by emp ID*/
+        if( p->DataPack->Data.Employee.empId >= q->DataPack->Data.Employee.empId )
             return true;
         else
             return false;
     }
     else if( strcmp(str, QUERY_OPTION_1_4) == 0 )
     {
-        /*sorted by emp ID*/
+        /*sort by year of experience*/
         if( p->DataPack->Data.Employee.experience >= q->DataPack->Data.Employee.experience )
             return true;
         else

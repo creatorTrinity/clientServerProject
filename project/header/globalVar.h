@@ -18,6 +18,7 @@
 #define SERVER_CONNECTED "OK"
 #define SERVER_NOT_CONNECTED "NOK"
 #define SERVER_PCK_ERR "PCK_ERR"
+#define SERVER_IGNORE_MSG "PCK_IGN"
 #define SERVER_UNKNOWN_ERROR "FAILED"
 #define OPERATION_SUCCESS "operation successfull"
 

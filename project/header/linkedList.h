@@ -52,22 +52,30 @@ node* addUpdateDeleteNode(node **head,
         p = p->next;
     }
 
+    if( strcmp(queryStr,QUERY_OPTION_ADD_RECORD) == 0)
+    {
+        DataPack->Data.Employee.empId = _LAST_EMP_ID_ + 1;
+        addNode(&_EMP_DB_DATA_LIST_, DataPack);
+        sprintf(msg,"Record added for the EMPID = <%d>\n",empId);
+        return;
+    }
+
     if ( p == NULL)
     {
         printf("record not found for the EMPID = %d\n",empId);
         sprintf(msg,"Record not found for the EMPID = <%d>\n",empId);
         return NULL;
-    }
-
-    if( strcmp(queryStr,QUERY_OPTION_ADD_RECORD) == 0)
-    {
-        addNode(&_EMP_DB_DATA_LIST_, DataPack);
-        sprintf(msg,"Record added for the EMPID = <%d>\n",empId);
-    }
+    }    
     else if( strcmp(queryStr,QUERY_OPTION_UPADTE_RECORD) == 0 )
     {
-        memcpy(&p->DataPack, &p->DataPack, sizeof (dataPack));
-        sprintf(msg,"Record Updated for the EMPID = <%d>\n",empId);
+        if( DataPack != NULL )
+        {
+           memset(&p->DataPack->Data.Employee,0,sizeof(employee));
+           memset(&p->DataPack->Data.Employee.skillSet,0,sizeof(p->DataPack->Data.Employee.skillSet));
+           memcpy(&p->DataPack->Data.Employee, &DataPack->Data.Employee, sizeof (employee));
+           sprintf(msg,"Record Updated for the EMPID = <%d>\n",empId);
+        }
+        return p;        
     }
     else if( strcmp(queryStr,QUERY_OPTION_DEL_RECORD) == 0)
     {

@@ -1,7 +1,6 @@
 #ifndef _THREAD_FUNC_H_
 #define _THREAD_FUNC_H_
 
-//#include "dataStruct.h"
 #include "linkedList.h"
 #include "fileRW.h"
 #include "sortBubble.h"
@@ -84,9 +83,12 @@ void *myThreadFunc(void *arg)
     int msgId;
     int key;
     char result[MAX_ARR_SIZE];
+    int oprType;
+    bool flag;
 
     watchDog *WatchDog;
     node *EMP_DB_DATA_CONTAINER_LIST = NULL;
+    node *p = NULL;
 
     msgQueue mq;
     msgPacket MsgPack;
@@ -109,7 +111,7 @@ void *myThreadFunc(void *arg)
     MsgPack.DataPack.timeStamp = currentTime;
     MsgPack.DataPack.structId = SERVER_ACK;
     MsgPack.endOfPacket = 0;
-    mq.msgType = CLIENT_START;
+    mq.msgType = 1;
     mq.msgPk = MsgPack;
     //msgId = msgget(KEY,0666 | IPC_CREAT);
     printf(" sending ACK message from thread id = %lu\n", threadId);
@@ -140,19 +142,12 @@ void *myThreadFunc(void *arg)
     //updateTimeToThread(&ThreadArgs);
     /*this part will be updated everytime if the server thread communicate with client*/
     copyLinkedList(&EMP_DB_DATA_CONTAINER_LIST,_EMP_DB_DATA_LIST_);
-    printf("goig to print EMP_DB_DATA_CONTAINER_LIST\n");
-    printLinkedList(EMP_DB_DATA_CONTAINER_LIST);
+    printf("Goig to print EMP_DB_DATA_CONTAINER_LIST\n");
+    //printLinkedList(EMP_DB_DATA_CONTAINER_LIST);
     while(1)
     {
-        MsgPack.DataPack.Data.QueryString = QueryString;
-        MsgPack.DataPack.structId = QUERY_STRING;
-        MsgPack.endOfPacket = 0;
-        mq.msgType = key;
-        mq.msgPk = MsgPack;
 
-        memset(&QueryString,0,sizeof (queryString));
-        memset(&QueryResult,0,sizeof (queryResult));
-
+        printf("\nServer thread is waiting for the client message\n");
         if( msgrcv(msgId ,&mq, sizeof(mq.msgPk), 0, 0 ) != -1 )
         {
             printf("server received mq.msgPk.structId = %d\n",mq.msgPk.DataPack.structId);
@@ -171,6 +166,7 @@ void *myThreadFunc(void *arg)
             {
                 QueryResult = (mq.msgPk.DataPack.Data.QueryResult);
                 printf(" client QueryResult = %s\n",QueryResult.result);
+                continue;
             }
             else if(mq.msgPk.DataPack.structId == QUERY_STRING )
             {
@@ -190,16 +186,16 @@ void *myThreadFunc(void *arg)
                 printf("WHILE myThreadFunc:::Server ignoring Bad request from client\n");
                 printf("Ignoring the request\n");
 
-                /*strcpy(ServerAck.msg, SERVER_PCK_ERR);
+                strcpy(ServerAck.msg, SERVER_IGNORE_MSG);
                 MsgPack.DataPack.Data.ServerAck = ServerAck;
                 time(&currentTime);
                 MsgPack.DataPack.timeStamp = currentTime;
                 MsgPack.DataPack.structId = SERVER_ACK;
                 MsgPack.endOfPacket = 0;
-                mq.msgType = CLIENT_START;
+                mq.msgType = 1;
                 mq.msgPk = MsgPack;
-                //msgId = msgget(KEY,0666 | IPC_CREAT);
-                printf(" sending ACK message from thread id = %lu\n", threadId);
+
+                printf(" Ignoring the request::sending ACK message from thread id = %lu\n", threadId);
 
                 msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
                 if(msgRet==-1)
@@ -207,33 +203,144 @@ void *myThreadFunc(void *arg)
                     perror("WHILE myThreadFunc:::msg Send error: ");
                     printf("WHILE myThreadFunc:::Server msg not send\n");
                     break;
-                }*/
+                }
                 continue;
             }
 
             /* This function will create the query response of a client*/
+
             prepareClientResponse( &QueryResult,
                                    &QueryString,
-                                   EMP_DB_DATA_CONTAINER_LIST);
+                                   &EMP_DB_DATA_CONTAINER_LIST,
+                                   &oprType);
             /* This function will create the query response of a client*/
-            //strcpy(QueryResult.result,result);
 
             time(&currentTime);
             MsgPack.DataPack.timeStamp = currentTime;
             MsgPack.DataPack.Data.QueryResult = QueryResult;
             MsgPack.DataPack.structId = QUERY_RESULT;
+            MsgPack.batchData = false;
             MsgPack.endOfPacket = 0;
-            mq.msgType = key;
+            mq.msgType = 1;
             mq.msgPk = MsgPack;
 
-
-            msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
-            if(msgRet==-1)
+            if( oprType == 0)
             {
-                perror("msg Send error: ");
-                printf("Server msg not send\n");
-                break;
+                p = _EMP_DB_DATA_LIST_;
+                while(p != NULL)
+                {
+                    QueryResult.Employee = p->DataPack->Data.Employee;
+                    MsgPack.batchData = true;
+                    MsgPack.DataPack.Data.QueryResult = QueryResult;
+                    MsgPack.endOfPacket = 0;
+                    mq.msgType = 1;
+                    mq.msgPk = MsgPack;
+                    sleep(1);
+                    msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+                    if(msgRet==-1)
+                    {
+                        perror("msg Send error: ");
+                        printf("Server msg not send\n");
+                        break;
+                    }
+                    p = p->next;
+                }
+                sleep(1);
+
+                memset(&QueryResult.Employee,0,sizeof(employee));
+                MsgPack.batchData = false;
+                strcpy(QueryResult.result,"transmition completed");
+                MsgPack.DataPack.Data.QueryResult = QueryResult;
+                MsgPack.endOfPacket = 0;
+                mq.msgType = 1;
+                mq.msgPk = MsgPack;
+
+                printf("\nServer is sending the last message\n");
+                msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+                if(msgRet==-1)
+                {
+                    perror("msg Send error: ");
+                    printf("Server msg not send\n");
+                    break;
+                }
             }
+            else if(oprType == 1)
+            {
+                p = EMP_DB_DATA_CONTAINER_LIST;
+                flag = true;
+                printContainerLinkedList(EMP_DB_DATA_CONTAINER_LIST);
+                while(p != NULL)
+                {
+                    if( p->DataPack->blank == true)
+                    {
+                        flag = false;
+                        break;
+                    }
+
+                    QueryResult.Employee = p->DataPack->Data.Employee;
+                    MsgPack.batchData = true;
+                    MsgPack.DataPack.Data.QueryResult = QueryResult;
+                    MsgPack.endOfPacket = 0;
+                    mq.msgType = 1;
+                    mq.msgPk = MsgPack;
+
+                    sleep(1);
+                    msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+                    if(msgRet==-1)
+                    {
+                        perror("msg Send error: ");
+                        printf("Server msg not send\n");
+                        break;
+                    }
+                    p = p->next;
+                }
+                sleep(1);              
+
+                memset(&QueryResult.Employee,0,sizeof(employee));
+                MsgPack.batchData = false;
+                if(flag == false)
+                {
+                    strcpy(QueryResult.result,"search data not found");
+                }
+                else
+                {
+                    strcpy(QueryResult.result,"transmition completed");
+                }
+                
+                MsgPack.DataPack.Data.QueryResult = QueryResult;
+                MsgPack.endOfPacket = 0;
+                mq.msgType = 1;
+                mq.msgPk = MsgPack;
+
+                msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+
+                if(msgRet==-1)
+                {
+                    perror("msg Send error: ");
+                    printf("Server msg not send\n");
+                    break;
+                }
+            }
+            else
+            {
+                time(&currentTime);
+                MsgPack.DataPack.timeStamp = currentTime;
+                MsgPack.DataPack.Data.QueryResult = QueryResult;
+                MsgPack.DataPack.structId = QUERY_RESULT;
+                MsgPack.batchData = false;
+                MsgPack.endOfPacket = 0;
+                mq.msgType = 1;
+                mq.msgPk = MsgPack;
+
+                msgRet = msgsnd(msgId, &mq, sizeof(mq.msgPk ), 0);
+                if(msgRet==-1)
+                {
+                    perror("msg Send error: ");
+                    printf("Server msg not send\n");
+                    break;
+                }
+            }
+
             /*this part will be updated everytime if the server thread communicate with client*/
             //updateTimeToThread(&ThreadArgs);
             /*this part will be updated everytime if the server thread communicate with client*/

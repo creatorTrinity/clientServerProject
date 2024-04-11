@@ -10,7 +10,8 @@ pthread_mutex_t lock;
 
 void prepareClientResponse(queryResult *QueryResult,
                            queryString *QueryString,
-                           node *_EMP_DB_DATA_CONTAINER_LIST_)
+                           node **_EMP_DB_DATA_CONTAINER_LIST_,
+                           int *oprType)
 {
 
     char query[MAX_ARR_SIZE];
@@ -21,6 +22,7 @@ void prepareClientResponse(queryResult *QueryResult,
     dataPack DataPack;
     char queryStr[MAX_ARR_SIZE] = "\0";
     char dataToSearch[MAX_ARR_SIZE] = "\0";
+    node *temp_CONTAINER_LIST_ = *_EMP_DB_DATA_CONTAINER_LIST_;
 
     strcpy(query,QueryString->query);
 
@@ -45,6 +47,7 @@ void prepareClientResponse(queryResult *QueryResult,
        )
     {
 
+        *oprType = 0;
         sortLinkedList(&_EMP_DB_DATA_LIST_,queryStr);
         printLinkedList(_EMP_DB_DATA_LIST_);
     }
@@ -56,21 +59,31 @@ void prepareClientResponse(queryResult *QueryResult,
            )
     {
 
+        *oprType = 1;
         printf("\ncalling the searchRecords\n");
-        searchRecords(_EMP_DB_DATA_LIST_, &_EMP_DB_DATA_CONTAINER_LIST_,queryStr,dataToSearch);
-        printContainerLinkedList(_EMP_DB_DATA_CONTAINER_LIST_);
+        searchRecords(_EMP_DB_DATA_LIST_, &temp_CONTAINER_LIST_,queryStr,dataToSearch);
+        printContainerLinkedList(temp_CONTAINER_LIST_);
     }
     else if(    strcmp(queryStr, QUERY_OPTION_ADD_RECORD) == 0     /*add one record */
                 || strcmp(query, QUERY_OPTION_UPADTE_RECORD) == 0  /*update record using empID*/
                 || strcmp(query, QUERY_OPTION_DEL_RECORD) == 0     /*delete record using empID*/
             )
     {
+        *oprType = 2;
         DataPack.structId = EMP_INFO;
-        memset(&DataPack,0,sizeof (dataPack));
+        memset(&DataPack.Data.Employee, 0,sizeof (employee));
         memcpy(&DataPack.Data.Employee,&QueryString->Employee,sizeof (employee));
         if(digits_only(dataToSearch))
         {
-            empId = atoi(dataToSearch);
+            if(strcmp(query, QUERY_OPTION_UPADTE_RECORD) == 0 )  /*update record using empID*/
+            {
+                empId = DataPack.Data.Employee.empId;
+            }
+            else
+            {
+                empId = atoi(dataToSearch);
+            }
+            
             pthread_mutex_lock(&lock);
             addUpdateDeleteNode(&_EMP_DB_DATA_LIST_,
                                              &DataPack,
@@ -90,7 +103,7 @@ void prepareClientResponse(queryResult *QueryResult,
     }
     else
     {
-
+        strcpy(QueryResult->result,"Unhandled query option");
         printf("\nUnhandled query option\n");
     }
 }

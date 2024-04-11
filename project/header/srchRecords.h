@@ -3,6 +3,7 @@
 
 #include "dataStruct.h"
 
+
 void searchRecords(node *head, node **container, const char *queryStr,const char *dataToSearch)
 {
     node *p,*q,*r;
@@ -43,7 +44,9 @@ void searchRecords(node *head, node **container, const char *queryStr,const char
             {
                 blank->DataPack->structId = EMP_INFO;
                 blank->DataPack->blank = false;
-                memcpy(&blank->DataPack->Data.Employee, &p->DataPack->Data.Employee, sizeof (p->DataPack->Data.Employee));
+                memcpy( &blank->DataPack->Data.Employee, 
+                        &p->DataPack->Data.Employee, 
+                        sizeof (p->DataPack->Data.Employee));
             }
         }
         else if( strcmp(queryStr, QUERY_OPTION_3_0) == 0 )

@@ -115,12 +115,12 @@ int fileInsertData()
 int fileBackupData()
 {
     FILE *fptr1, *fptr2;
-    char filename[100], c;
+    char newFilename[100], c;
     time_t currentTime;
     time(&currentTime);
-    sprintf(filename,"%s_%lu",_EMPDB_PATH_,currentTime);
+    sprintf(newFilename,"%s_%lu",_EMPDB_PATH_,currentTime);
 
-    printf("\n!!!Taking backup of the old empData  file = %s !!!\n",filename);
+    printf("\n!!!Taking backup of the old empData  file = %s !!!\n",_EMPDB_PATH_);
 
     // Open one file for reading
     fptr1 = fopen(_EMPDB_PATH_, "rb");
@@ -130,13 +130,13 @@ int fileBackupData()
         return 1;
     }
 
-    printf("\n!!!Taking backup of the old empData into the file = %s !!!\n",filename);
+    printf("\n!!!Taking backup of the old empData into the file = %s !!!\n",newFilename);
 
     // Open another file for writing
-    fptr2 = fopen(filename, "wb");
+    fptr2 = fopen(newFilename, "wb");
     if (fptr2 == NULL)
     {
-        printf("Cannot open file %s \n", filename);
+        printf("Cannot open file %s \n", newFilename);
         return 1;
     }
 
@@ -148,7 +148,7 @@ int fileBackupData()
         c = fgetc(fptr1);
     }
 
-    printf("\nContents copied to %s", filename);
+    printf("\nContents copied to %s", newFilename);
 
     fclose(fptr1);
     fclose(fptr2);
@@ -292,6 +292,10 @@ int empDBLinkedList()
         else
         {
             break;
+        }
+        if( _LAST_EMP_ID_ < Employee.empId)
+        {
+           _LAST_EMP_ID_ = Employee.empId;
         }
 
         memcpy(&(DataPack.Data.Employee),&Employee,sizeof (Employee));

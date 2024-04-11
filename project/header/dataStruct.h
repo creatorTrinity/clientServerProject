@@ -10,7 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
-
+ 
 
 #include "globalVar.h"
 #include "helpingFunc.h"
@@ -88,7 +88,7 @@ typedef struct dataPack
 typedef struct msgPacket
 {
     dataPack DataPack;
-    int batchSize;
+    bool batchData;
     char endOfPacket;
 
 }msgPacket;
@@ -117,6 +117,7 @@ typedef struct node
 node *_WATCH_DOC_ELE_HEAD_ = NULL;
 volatile int _SERVER_MSG_ID_;
 node *_EMP_DB_DATA_LIST_ = NULL;
+volatile int _LAST_EMP_ID_=0;
 
 
 
