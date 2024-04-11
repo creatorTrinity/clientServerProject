@@ -1,4 +1,4 @@
-#include "../header/dataStruct.h"
+//#include "../header/dataStruct.h"
 #include "../header/threadFunc.h"
 
 void ServerAck(char msg[],int ack)
@@ -54,6 +54,8 @@ int main()
     time_t currentTime;
     msgQueue mq;
     clientInfo ClientInfo;
+    serverMsgId = msgget(KEY,0666 | IPC_CREAT);
+    msgctl(serverMsgId, IPC_RMID, NULL);
     serverMsgId = msgget(KEY,0666 | IPC_CREAT);
     mq.msgType = CLIENT_INFO;
     _SERVER_MSG_ID_ = serverMsgId;
